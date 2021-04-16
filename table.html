@@ -1,0 +1,224 @@
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<title> 日本経済新聞社・東京大学越塚登研究室共同研究</title>
+</head>
+
+<body>
+	<hr>
+	<h1>日本経済新聞社・東京大学越塚登研究室共同研究</h1>
+	<hr>
+
+	<h2>主要都市（10万人以上の市区）の潜在力データ（各項目をクリックすると、昇順・降順の並べ替えができます）</h2>
+
+	<p>※表が表示されない場合があります。その際はページを再読み込みしてください。</p>
+	<p>※データに関する説明は、
+		<a href="https://koshizuka-lab.github.io/data-journalism-2021/">README.md</a>をご覧ください。
+		CSVデータ本体は、
+		<a href="https://koshizuka-lab.github.io/data-journalism-2021/result.csv">result.csv</a>からダウンロードできます。</p>
+	
+
+	<hr>
+	<div id="table_div"></div>
+	<hr>
+
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+	<script type="text/javascript">
+
+		var result = []; // 読み込んだCSVデータを格納する最終的な二次元配列
+
+		// 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
+		function convertCSVtoArray(str) { // 読み込んだCSVデータが文字列として渡される
+			var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
+
+			// 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+			for (var i = 0; i < tmp.length; ++i) {
+				result[i] = tmp[i].split(',');
+			}
+		}
+
+		function drawTable() {
+			var params = [
+				"総人口",
+				"総人口_順位",
+				"15歳未満人口",
+				"15歳未満人口_順位",
+				"15～64歳人口",
+				"15～64歳人口_順位",
+				"65歳以上人口",
+				"65歳以上人口_順位",
+				"外国人人口",
+				"外国人人口_順位",
+				"昼間人口",
+				"昼間人口_順位",
+				"総世帯数",
+				"総世帯数_順位",
+				"一般世帯数",
+				"一般世帯数_順位",
+				"核家族世帯数",
+				"核家族世帯数_順位",
+				"単独世帯数",
+				"単独世帯数_順位",
+				"図書館数",
+				"図書館数_順位",
+				"１住宅当たり延べ面積",
+				"１住宅当たり延べ面積_順位",
+				"ごみのリサイクル率",
+				"ごみのリサイクル率_順位",
+				"一般病院数",
+				"一般病院数_順位",
+				"一般診療所数",
+				"一般診療所数_順位",
+				"歯科診療所数",
+				"歯科診療所数_順位",
+				"医師数",
+				"医師数_順位",
+				"歯科医師数",
+				"歯科医師数_順位",
+				"薬剤師数",
+				"薬剤師数_順位",
+				"介護老人福祉施設数",
+				"介護老人福祉施設数_順位",
+				"児童福祉施設等数（助産施設・児童遊園を除く）",
+				"児童福祉施設等数（助産施設・児童遊園を除く）_順位",
+				"保育所等数",
+				"保育所等数_順位",
+				"保育所等在所児数",
+				"保育所等在所児数_順位",
+				"通勤時間",
+				"通勤時間_順位",
+				"国勢調査インターネット回答率",
+				"国勢調査インターネット回答率_順位",
+				"生活サービスの徒歩圏カバー率",
+				"生活サービスの徒歩圏カバー率_順位"
+			]
+
+			var unit = [
+				"人",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"世帯",
+				"位",
+				"世帯",
+				"位",
+				"世帯",
+				"位",
+				"世帯",
+				"位",
+				"ヶ所",
+				"位",
+				"m^2",
+				"位",
+				"%",
+				"位",
+				"ヶ所",
+				"位",
+				"ヶ所",
+				"位",
+				"ヶ所",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"人",
+				"位",
+				"ヶ所",
+				"位",
+				"ヶ所",
+				"位",
+				"ヶ所",
+				"位",
+				"人",
+				"位",
+				"分",
+				"位",
+				"%",
+				"位",
+				"%",
+				"位"
+			]
+
+			// Google Chart の初期化／テーブルの生成
+			var data = new google.visualization.DataTable();
+
+			// HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+			var req = new XMLHttpRequest(); 
+
+			// アクセスするファイルを指定
+			req.open("get", "https://koshizuka-lab.github.io/data-journalism-2021/result.csv", true); 
+
+			// レスポンスが返ってきたらテーブルを作成する（コールバック定義）	
+			req.onload = function () {
+				convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
+
+				data.addColumn('number', '自治体番号');
+				data.addColumn('string', '都道府県');
+				data.addColumn('string', '市区');
+
+				//パラメータごとまとめてaddColumn
+				for (var i = 0; i < params.length; i++) {
+					data.addColumn('number', params[i]);
+				} // for
+
+				for (var i = 1; i < result.length - 1; i++) {
+					var row = [];
+					var tmpobj = new Object();
+
+					tmpobj.v = Number(result[i][0]);
+					tmpobj.f = result[i][0];
+					row.push(tmpobj);
+
+					row.push(result[i][1]);
+
+					row.push(result[i][2]);
+
+					for (var j = 0; j < params.length; j++) {
+						tmpobj = new Object();
+						tmpobj.v = Number(result[i][j + 3]);
+						tmpobj.f = result[i][j + 3] + unit[j];
+						row.push(tmpobj);
+					}
+
+					data.addRow(row);
+				} // for
+
+				var table = new google.visualization.Table(document.getElementById('table_div'));
+
+				var options = {
+					frozenColumns: 3
+				};
+
+				// Google Chart Table 描画
+				table.draw(data, options);
+
+			} // req.onload
+
+			// HTTPリクエストの発行
+			req.send(null); 
+
+		} //function drawTable()
+	
+		// Google ChartでTable Chartを描画する
+		google.charts.load('current', { 'packages': ['table'] });	
+		google.charts.setOnLoadCallback(drawTable);
+
+	</script>
+</body>
+
+<address>
+(C) 2021 Nikkei Inc. and Koshizuka-lab, All Rights Reserved.
+</address>
+
+</html>
